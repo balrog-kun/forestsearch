@@ -1,0 +1,606 @@
+/*
+ * Example stylesheet for the viewer widgets in viewer.js.
+ *
+ * Copyright (C) 2009  Andrzej Zaborowski
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License version 3
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+#generalinfo {
+	visibility:	hidden;
+	z-index:	100;
+	padding:	20px 40px;
+	-moz-border-radius: 30px;
+	-webkit-border-radius: 30px;
+	font-size:	10pt;
+	font-family:	"Verdana";
+	line-height:	90%;
+	max-width:	40%;
+	min-width:	15%;
+	position:	absolute;
+}
+
+#generalinfo.general {
+	background:	#729fcf; /* Tango: Sky Blue */
+}
+
+#generalinfo.nonterminal {
+	background:	#fcaf3e; /* Tango: Orange */
+}
+
+#generalinfo.terminal {
+	background:	#cc0000; /* Tango: Scarlet Red */
+}
+
+.nodelabel {
+	overflow:	visible;
+}
+
+.nodelabel-default {
+	font-family:	"Verdana";
+	font-size:	9pt;
+	text-align:	center;
+}
+
+.nodelabel-simple {
+	font-family:	"Verdana";
+	font-size:	10pt;
+}
+
+.middle {
+	display:	table-cell;
+	left:		50%;
+	position:	absolute;
+}
+
+.nodecontent {
+	position:	relative;
+	left:		-50%;
+	border:		1px black solid;
+	text-align:	center;
+	padding:	2px 5px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+}
+
+.link {
+	cursor:		pointer;
+}
+
+.rule-default {
+	font-size:	8pt;
+	text-transform:	uppercase;
+	white-space:	nowrap;
+}
+
+span.rule-simple {
+	position:	absolute;
+	left:		10px;
+	top:		100%;
+	font-size:	10px;
+	font-family:	Monospace;
+	line-height:	80%;
+	vertical-align:	bottom;
+	text-align:	right;
+	white-space:	nowrap;
+	background-color:	#eee;
+}
+
+span.rule-choice {
+	left:		55%;
+	top:		0%;
+	background-color:	inherit;
+}
+
+div.switcher-left, div.switcher-right {
+	display:	inline-block;
+	width:		6px;
+	height:		12px;
+	border:		0;
+	padding:	0;
+	margin:		0;
+	cursor:		pointer;
+}
+div.switcher-left {
+	background-image:	url('ts-left.png');
+}
+div.switcher-right {
+	margin-left:	1px;
+	background-image:	url('ts-right.png');
+}
+div.switcher-middle, div.switcher-current {
+	display:	inline-block;
+	width:		4px;
+	height:		12px;
+	border:		0;
+	padding:	0;
+	margin:		0;
+	margin-left:	1px;
+}
+div.switcher-middle {
+	background-color: #858585;
+}
+div.switcher-current {
+	background-color: black;
+}
+
+/* Simple */
+.nonterminal-node {
+	background:	#fce94f; /* Tango: Butter */
+}
+
+/* Default */
+.selected-node {
+	background:	yellow;
+}
+.unselected-node {
+	background:	#ccc;
+}
+.matched-node {
+	background:	orange !important;
+	font-weight:	bold;
+	border:		red 2px dashed;
+}
+
+/* Simple & Default */
+.terminal-node {
+	background:	#f99;
+}
+
+.highlighted-node-simple {
+	border:		black 3px solid;
+	padding:	0px 3px;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
+}
+
+.nodecircle-default {
+	background:	#eef;
+	width:		10%;
+}
+
+.nodecircle-simple {
+	background:	#000;
+	width:		10%;
+}
+
+.ruler-default {
+	font-size:	10pt;
+	text-align:	center;
+	z-index:	10;
+	height:		40px;
+	background:	#fff; /* Non-opaque */
+}
+
+.ruler-simple {
+	font-size:	13px;
+	text-align:	center;
+	z-index:	10;
+	height:		54px;
+	background:	none; /* TODO: Non-opaque */
+}
+
+.lexeme-default {
+	padding-top:	10px;
+}
+
+.lexeme-simple {
+	border:		1px black solid;
+	white-space:	nowrap;
+	height:		52px;
+}
+
+.attrs-caption {
+	font-size:	6pt;
+	font-weight:	bold;
+}
+.attr-table, .attr-table tr, .attr-table td {
+	border-style:	hidden;
+	text-align:	left;
+}
+.attr-table div {
+	margin-top:	-0.25em;
+	margin-bottom:	-0.25em;
+	line-height:	90%;
+	font-size:	9pt;
+}
+
+.attr-name {
+	text-align:	right !important;
+	color:		black !important;
+}
+.attr-name div:after {
+	content:	":";
+}
+
+.attr-diff {
+	background:	rgba(255, 255, 255, 0.8);
+	color:		red;
+}
+
+.tip {
+	font-style:	italic;
+	font-size:	15pt;
+}
+
+pre {
+	color:		#555;
+	overflow:	auto;
+}
+
+.q {
+	color:		white;
+	font-size:	40pt;
+	font-weight:	bold;
+	font-family:	"Courier";
+}
+
+.head {
+	color:		black;
+	font-size:	10pt;
+	text-align:	center;
+}
+
+a.moreinfo, p.moreinfo {
+	font-size:	6pt;
+	text-decoration:none;
+	color:		black;
+	text-align:	right;
+	cursor:		pointer;
+}
+
+div.moreinfo {
+	line-height:	120%;
+}
+
+span.value {
+	font-weight:	bold;
+}
+
+table.synspreadviewer-table {
+	border-width:	0px;
+	border-style:	none;
+	margin:		0;
+	padding:	0;
+}
+table.synspreadviewer-table * td {
+	vertical-align:	middle;
+	text-align:	center;
+	border:		#eeeeee solid 1px;
+	white-space:	nowrap;
+}
+table.synspreadviewer-table * td.synspreadviewer-selected {
+	background-color: #eeeeee;
+}
+table.synspreadviewer-table * td.synspreadviewer-nonterminal {
+	border-color:	black;
+}
+table.synspreadviewer-table * td.synspreadviewer-terminal {
+	border-color:	green;
+}
+table.synspreadviewer-table * td.synspreadviewer-ruler {
+	border-color:	gray;
+}
+table.synspreadviewer-table * td.synspreadviewer-empty {
+	border-color:	white;
+	border-width:	0px;
+	border-style:	none;
+}
+table.synspreadviewer-ruler {
+	border-width:	0px;
+	border-style:	none;
+	margin:		0;
+	padding:	0;
+}
+table.synspreadviewer-ruler * td {
+	border:		gray solid 1px;
+}
+table.synspreadviewer-ruler * td div,
+	table.synspreadviewer-table * td.synspreadviewer-ruler div {
+	white-space:	nowrap;
+	text-align:	center;
+	/* TODO: align text to the middle vertically */
+}
+
+/* Contents of the syntactic spreasheet cells */
+div.ssv-cellid {
+	float:		left;
+	color:		#d77;
+	font-size:	10px;
+	white-space:	nowrap;
+}
+div.ssv-treecount {
+	float:		right;
+	font-size:	10px;
+	white-space:	nowrap;
+}
+/* Hack to avoid the floating divs colliding with the cell content */
+div.ssv-desc:before {
+	content:	" ";
+	white-space:	normal;
+}
+div.ssv-desc {
+	font-size:	12px;
+	text-align:	center;
+	white-space:	nowrap;
+}
+span.ssv-orth {
+	font-size:	12px;
+	font-style:	italic;
+	font-family:	'Serif';
+	color:		black;
+	background-color: #2ac;
+	padding-left:	5px;
+	padding-right:	5px;
+}
+span.ssv-base {
+	font-size:	12px;
+	text-transform:	uppercase;
+	font-family:	'Serif';
+	color:		blue;
+}
+span.ssv-pos {
+	font-size:	12px;
+	font-family:	'Arial';
+}
+span.ssv-tag {
+	font-size:	9px;
+}
+span.ssv-children:before, span.ssv-children:after {
+	content:	"⇑";
+	background-color:#7c7;
+}
+span.ssv-child-pointer {
+	display:	inline-block;
+	color:		red;
+	border-color:	black;
+	border-style:	solid;
+	border-width:	1px;
+	-moz-border-radius: 6px;
+	-webkit-border-radius: 6px;
+	font-size:	12px;
+	margin-left:	3px;
+	margin-right:	3px;
+}
+span.ssv-rulename {
+	font-size:	10px;
+}
+span.ssv-category {
+	font-size:	12px;
+	background-color: yellow;
+	font-style:	italic;
+	font-family:	'Serif';
+}
+span.ssv-treenums:before {
+	content:	"trees: ";
+	font-style:	italic;
+}
+span.ssv-treenums {
+	font-size:	10px;
+}
+a.ssv-treelink {
+	cursor:		pointer;
+	text-decoration: underline;
+}
+
+#body {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+.button {
+	position: absolute;
+	text-align: center;
+	border-style: solid;
+	border-color: #bbbbbb;
+	border-width: 1px;
+	cursor: pointer;
+	color: black;
+	-moz-border-radius: 7px;
+	-webkit-border-radius: 7px;
+	vertical-align: bottom;
+}
+.button:hover {
+	background: rgba(220, 220, 220, .6) !important;
+}
+.button > img {
+	border: 0;
+}
+.button table {
+	border: 0;
+}
+.button > td {
+	border: 0;
+	text-align: center;
+	vertical-align: middle;
+}
+.label {
+	position: absolute;
+	text-align: center;
+	margin: 3px;
+	vertical-align: middle;
+}
+.invisible {
+	visibility: hidden;
+	display: none;
+}
+.disabled {
+	color: gray;
+}
+.disabled:hover {
+	background: transparent;
+}
+
+.icon {
+	height: 0.8em;
+}
+
+#searchdiv {
+	position: absolute;
+	left: 10%;
+	right: 10%;
+	top: 0.5em;
+	height: 2em;
+	z-index: 10;
+	background: white;
+}
+div.searchinput {
+	position: absolute;
+	left: 5%;
+	top: 5%;
+	width: 70%;
+	height: 90%;
+	overflow: hidden;
+}
+input.searchinput {
+	border: 0;
+	background-color: #ffff80;
+	font-family: 'Verdana';
+	font-size: 1em;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+input.searchinput:hover {
+	background-color: #ffffa0;
+}
+#searchbutton {
+	left: 77%;
+	top: 5%;
+	width: 15%;
+	height: 90%;
+	line-height: 200%;
+}
+#helpbutton {
+	left: 93%;
+	top: 5%;
+	width: 5%;
+	height: 90%;
+	line-height: 200%;
+}
+
+#resultdiv {
+	position: absolute;
+	left: 0%;
+	right: 0%;
+	top: 2.5em;
+	bottom: 0%;
+}
+
+#res_list, #res_forest, #helpdiv {
+	position: absolute;
+	visibility: hidden;
+	overflow: hidden;
+	background: white;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
+	-moz-box-shadow: 0 0 8px 3px #ccc;
+	-webkit-box-shadow: 0 0 8px 3px #ccc;
+	box-shadow: 0 0 8px 3px #ccc;
+}
+
+#res_list, #help {
+	overflow-y: auto;
+}
+#res_forest {
+	overflow: hidden;
+}
+#helpdiv {
+	font-family: 'Verdana';
+	padding: 1em;
+}
+
+#res_dpy {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+
+#closebutton {
+	left: 0.2em;
+	top: 0.2em;
+	width: 8em;
+	height: 2em;
+	line-height: 200%;
+	background: rgba(255, 255, 255, .6);
+}
+
+#prevbutton {
+	left: 0.2em;
+	top: 2.4em;
+	width: 2em;
+	height: 2em;
+	line-height: 200%;
+	background: rgba(255, 255, 255, .6);
+}
+#nextbutton {
+	left: 2.2em;
+	top: 2.4em;
+	width: 6em;
+	height: 2em;
+	line-height: 200%;
+	background: rgba(255, 255, 255, .6);
+}
+
+.mid {
+	position: absolute;
+	left: 30%;
+	right: 30%;
+	top: 30%;
+	bottom: 30%;
+	background: #fdc;
+	font-family: 'Verdana';
+	font-size: 1.2em;
+	text-align: center;
+	vertical-align: middle;
+	padding-top: 8%;
+	-moz-border-radius: 7px;
+	-webkit-border-radius: 7px;
+}
+
+#res-table, #res-table tr, #res-table td {
+	width: 100%;
+}
+#res-table td {
+	text-align: left;
+	font-family: 'Verdana';
+	font-size: 1em;
+	white-space: nowrap;
+}
+.hint:before {
+	content: '(';
+}
+.hint:after {
+	content: ') ';
+}
+.hint {
+	font-size: 0.6em;
+	color: #bbb;
+}
+.hilite {
+	text-decoration: underline;
+}
+.res0 {
+	background: #eee;
+}
+.res1, .res2 {
+	background: #fff;
+}
+.res0:hover {
+	background: #cce;
+}
+.res1:hover {
+	background: #ddf;
+}
