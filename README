@@ -1,0 +1,27 @@
+This is a very simple search engine for the data of the treebank that
+is going to become part of the Narodowy Korpus Języka Polskiego
+(www.nkjp.pl).  It can be used to find nodes in the syntactic
+trees of natural language sentences of the corpus, which posess some
+or all of the properties indicated in the search query given.  Search
+queries are given by the web user in the TIGERSearch-like query
+language.  The user may search for a single node possessing some
+property, a group of nodes (a subforest) that stand in some relation,
+an entire tree or an entire forest of possible derivation trees.
+
+The main dependencies for running the search engine currently are:
+ * a treebank in a format compatible with that of NKJP,
+ * postgresql >= 8.4 (tested with 8.4.8)
+ * python 3 (tested with 3.1.3)
+ * psycopg2 (tested with 2.4.2)
+ * ply (tested with 3.4)
+
+The postgresql administrator will need to create a database named 'treebank'
+with hstore and plpgsql support and assign create rights to the user who
+will run the import script, and assign select rights to the user that
+will run the server script.  (The easiest way to do that is to make that
+user the database owner.)  Example:
+
+# su - postgres
+$ psql <<< "CREATE DATABASE treebank WITH owner = joehacker encoding = 'UNICODE' template = template0;"
+$ createlang plpgsql treebank
+$ psql -d treebank -f /usr/share/postgresql-8.4/contrib/hstore.sql
