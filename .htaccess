@@ -1,0 +1,4 @@
+Options +ExecCGI
+<Files search>
+SetHandler cgi-script
+</Files>
