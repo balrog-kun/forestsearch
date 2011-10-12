@@ -118,6 +118,7 @@ searchbutton.onclick = function(evt) {
 
 	res_list.query = textinput.value.replace('#', '%23');
 	res_list.offset = 0;
+	res_list.res_count = -1;
 	res_list.send_query();
 }
 
@@ -132,9 +133,33 @@ res_list.send_query = function() {
 				return;
 			}
 
+			if (res_list.res_count == -1) {
+				if (resp.hits.length >= 20)
+					res_list.send_count_query();
+				else
+					res_list.res_count = resp.hits.length;
+			}
 			res_list.fill(resp.hits);
 		}, function(resp) {
 			res_list.set_message('Błąd połączenia: ' + resp);
+		}, false);
+}
+
+res_list.send_count_query = function() {
+	if (res_list.res_count != -1)
+		return;
+	res_list.res_count = -2;
+
+	var query = '/searchcount/' + this.query;
+	request_send(query, function(resp) {
+			if (typeof(resp) != 'object')
+				res_list.res_count = -3;
+			else
+				res_list.res_count = resp.count;
+			res_list.update_status();
+		}, function(resp) {
+			res_list.res_count = -3;
+			res_list.update_status();
 		}, false);
 }
 
@@ -256,13 +281,14 @@ res_list.fill = function(results) {
 	/* TODO: we currently hide the old results and wait for new ones
 	 * and then display only those when they're ready.  We could do
 	 * something more interesting like appending the new results to the
-	 * current list or something else.  One problem thought is that we
+	 * current list or something else.  One problem though is that we
 	 * should drop the XML docs for those old results because they take
 	 * a lot of memory..
 	 */
-	if (results.length == 20) {
-		var row = table.insertRow(-1);
-		var cell = row.insertCell(-1);
+	if (results.length == 20 && !('nextlink' in this)) {
+		this.nextlink = document.createElement('tr');
+		this.nextlink.className = 'status';
+		var cell = this.nextlink.insertCell(-1);
 		cell.className = 'res2';
 		cell.innerHTML = '<a href="#">Pobierz następne dwadzieścia</a>';
 		cell.onclick = function(evt) {
@@ -276,9 +302,17 @@ res_list.fill = function(results) {
 		};
 	}
 
-	if (res_list.offset) {
-		var row = table.insertRow(-1);
-		var cell = row.insertCell(-1);
+	if (!('statusrow' in this)) {
+		this.statusrow = document.createElement('tr');
+		this.statusrow.className = 'status';
+		var cell = this.statusrow.insertCell(-1);
+		cell.className = 'res2';
+	}
+
+	if (this.offset && !('prevlink' in this)) {
+		this.prevlink = document.createElement('tr');
+		this.prevlink.className = 'status';
+		var cell = this.prevlink.insertCell(-1);
 		cell.className = 'res2';
 		cell.innerHTML =
 			'<a href="#">Pobierz poprzednie dwadzieścia</a>';
@@ -293,11 +327,50 @@ res_list.fill = function(results) {
 		};
 	}
 
-	res_list.innerHTML = '';
-	res_list.appendChild(table);
-
+	this.res_table = table;
 	this.results = results;
+	this.update_status();
+
+	this.innerHTML = '';
+	this.appendChild(table);
+
 	this.tree_xml_load(0);
+}
+
+res_list.update_status = function() {
+	var showprev = this.offset > 0;
+	var shownext = (this.res_count < 0 && this.results.length == 20) ||
+		this.offset + 20 < this.res_count;
+
+	if (this.statusrow.parentNode)
+		this.statusrow.parentNode.removeChild(this.statusrow);
+	if ('prevlink' in this && this.prevlink.parentNode)
+		this.prevlink.parentNode.removeChild(this.prevlink);
+	if ('nextlink' in this && this.nextlink.parentNode)
+		this.nextlink.parentNode.removeChild(this.nextlink);
+
+	var ze = '' + this.res_count;
+	ze = ((ze.length % 3) == 0 && ze[0] == '1') ? ' ze ' : ' z ';
+	if ((this.offset == 0 && this.results.length < 20) ||
+			this.res_count == 20)
+		this.statusrow.innerHTML = 'Znaleziono ' + this.results.length +
+			[ ' zdanie', ' zdania', ' zdań' ]
+				[pl_plural(this.results.length)];
+	else
+		this.statusrow.innerHTML = 'Pokazano zdania od ' +
+			(this.offset + 1) + ' do ' +
+			(this.offset + this.results.length) + ze +
+			(this.res_count == -2 ? wait_small :
+			 (this.res_count < 0 ? '<img src=\'www/cross.png\' ' +
+			  'alt=\'Błąd zapytania\' title=\'Błąd zapytania\' />' :
+			  '' + this.res_count + ' pasujących'));
+
+	if (!this.statusrow.parentNode)
+		this.res_table.appendChild(this.statusrow);
+	if (shownext)
+		this.res_table.appendChild(this.nextlink);
+	if (showprev)
+		this.res_table.appendChild(this.prevlink);
 }
 
 res_list.tree_xml_load = function(i) {

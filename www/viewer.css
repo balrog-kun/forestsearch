@@ -570,14 +570,17 @@ input.searchinput:hover {
 	-webkit-border-radius: 7px;
 }
 
-#res-table, #res-table tr, #res-table td {
+#res-table, #res-table tr, #res-table tr td {
 	width: 100%;
 }
-#res-table td {
+#res-table tr {
 	text-align: left;
 	font-family: 'Verdana';
 	font-size: 1em;
 	white-space: nowrap;
+}
+#res-table tr.status {
+	font-size: 0.8em;
 }
 .hint:before {
 	content: '(';
