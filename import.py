@@ -156,6 +156,7 @@ for path, dir, files in os.walk(searchpath):
 conn.commit()
 print('Changes committed')
 # TODO: indexes
+curs.execute('CREATE INDEX node_treeid_idx ON node ( treeid )')
 curs.execute('ANALYZE node')
 curs.execute('ANALYZE tree')
 print('Analyzed')
