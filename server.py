@@ -69,6 +69,15 @@ class SearchHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 		elif req.startswith('/searchat/'):
 			offset, tiger = req[10:].split('/', 1)
 			offset = int(offset)
+		elif req.startswith('/searchcount/'):
+			tiger = req[13:]
+			try:
+				self.log_message('counting ' + tiger)
+				resp, sql = tigerquery.count(tiger)
+				return 'var ret = { count: ' + str(resp) + \
+					', sql: ' + to_jstr(sql) + ' }'
+			except Exception as e:
+				return 'var ret = ' + to_jstr(str(e))
 		else:
 			raise Exception('Unknown request')
 		try:

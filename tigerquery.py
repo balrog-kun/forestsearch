@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 # Translates TIGERSearch queries into SQL (postgres flavour)
 #
-# Copyright (©) 2011  Andrzej Zaborowski
+# Copyright (C) 2011  Andrzej Zaborowski
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License version 3
@@ -362,6 +362,34 @@ def query(tiger, offset):
 
 	curs.execute(sql)
 	return curs.fetchall(), sql
+
+def count(tiger):
+	global nodenum, nodenames
+	nodenum = 0
+	nodenames = []
+	vars, where = yacc.parse(tiger)
+	for v in vars:
+		where = where.replace(v, vars[v])
+	if '#' in where:
+		raise Exception('found uses of undefined variables')
+	for i, j in zip(nodenames, nodenames[1:]):
+		where = i + '.treeid = ' + j + '.treeid AND ' + where
+
+	# TODO: use Loose Indexscan recursive CTEs (as below) but figure
+	# out how to force a sensible query plan
+	sql = 'WITH RECURSIVE t AS (SELECT -1 AS treeid UNION ALL SELECT (' + \
+		'SELECT min(n0.treeid) AS treeid' + \
+		' FROM ' + ', '.join([ 'node as ' + i for i in nodenames ]) + \
+		' WHERE n0.treeid > t.treeid AND ' + where + \
+		') FROM t WHERE t.treeid IS NOT NULL)' + \
+		' SELECT COUNT(1) - 1 FROM t'
+	# For now we use a COUNT DISTINCT, which may be really slow sometimes
+	sql = 'SELECT COUNT(DISTINCT n0.treeid)' + \
+		' FROM ' + ', '.join([ 'node as ' + i for i in nodenames ]) + \
+		' WHERE ' + where
+
+	curs.execute(sql)
+	return curs.fetchall()[0][0], sql
 
 if __name__ == '__main__':
 	import sys

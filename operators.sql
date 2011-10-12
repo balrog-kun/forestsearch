@@ -15,6 +15,7 @@
 --
 -- Helper functions
 --
+-- TODO: try using recursive CTEs for graph searching everywhere
 CREATE OR REPLACE FUNCTION helper_forest_dominance(parent integer[][],
 	child integer, maxdepth integer, chfrom integer, chto integer)
 RETURNS bool AS $$
