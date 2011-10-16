@@ -230,7 +230,7 @@ def p_node_desc(t):
 		where, nodename, t[len(t) - 1] != ']' )
 def p_node_desc_var(t):
 	'node_desc : VAR'
-	t[0] = ( {}, 'true', t[1], false ) # REVISIT: why false? should be true?
+	t[0] = ( {}, 'true', t[1], False ) # REVISIT: why false? should be true?
 
 def p_feat_constraint_empty(t):
 	'feat_constraint : '
