@@ -131,7 +131,7 @@ res_list.send_query = function() {
 	request_send(query, function(resp) {
 			if (typeof(resp) != 'object') {
 				res_list.set_message('Serwer twierdzi: ' +
-						resp);
+						resp.to_xml_safe());
 				return;
 			}
 
