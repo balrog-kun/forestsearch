@@ -116,7 +116,7 @@ searchbutton.onclick = function(evt) {
 		return;
 	}
 
-	res_list.query = textinput.value.replace('#', '%23');
+	res_list.query = textinput.value.replace(/#/g, '%23');
 	res_list.offset = 0;
 	res_list.res_count = -1;
 	res_list.send_query();

@@ -408,7 +408,7 @@ forestviewer.prototype.init_ui = function() {
 			 */
 			if (re[1])
 				re[1] = new RegExp("([\\[\\( ,:;]|^)" +
-						re[1].replace(".", "\\.") +
+						re[1].replace(/\./g, "\\.") +
 						"([\\]\\[\\(\\) ,:;]|$)");
 			attach(span, "mouseover", function(evt) {
 						this_obj.highlight(re);
