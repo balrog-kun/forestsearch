@@ -40,6 +40,8 @@ document.create_button = function(parent, id) {
 	btn.id = id;
 	parent.appendChild(btn);
 
+	watchable(btn);
+
 	btn.text = "";
 	btn.watch("text", function(prop, oldval, newval) {
 				return btn.innerHTML = newval;
@@ -783,7 +785,9 @@ function adapt_schema(obj) {
 		var node = ret.nodes[nid];
 		if (node.terminal)
 			continue;
-		if ('child' in node.children)
+		if (!('children' in node))
+			node.children = [];
+		else if ('child' in node.children)
 			node.children = [ node.children ];
 		for (var rulenum in node.children) {
 			var r = node.children[rulenum];
