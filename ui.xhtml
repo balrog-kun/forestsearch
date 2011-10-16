@@ -178,7 +178,16 @@ res_forest.prevbutton.innerHTML = '&lt;';
 helpbutton.innerHTML = '?';
 helpbutton.enabled = true;
 helpbutton.onclick = function(evt) {
-	switch_to(help, [ res_list, res_forest ]);
+	if (!('opstate' in help) || help.opstate < 50)
+		switch_to(help, [ res_list, res_forest ]);
+	else {
+		var dest = null;
+		if (res_forest.opstate > 50)
+			dest = res_forest;
+		else if (res_list.opstate > 50)
+			dest = res_list;
+		switch_to(dest, [ res_list, res_forest ]);
+	}
 }
 
 res_list.dest_left = 2;
@@ -212,15 +221,17 @@ function switch_to(elem, nofadeelems) {
 		elems[i].animstep =
 			elems[i].dest_opstate == elems[i].start_opstate ?
 			100 : 0;
+
+		if (elems[i].dest_opstate > 0 || elems[i].start_opstate > 0) {
+			elems[i].style.left = elems[i].dest_left + "%";
+			elems[i].style.right = elems[i].dest_right + "%";
+			elems[i].style.top = elems[i].dest_top + "%";
+			elems[i].style.bottom = elems[i].dest_bottom + "%";
+		}
 	}
 
 	if (anim_tmr)
 		clearTimeout(anim_tmr);
-
-	elem.style.left = elem.dest_left + "%";
-	elem.style.right = elem.dest_right + "%";
-	elem.style.top = elem.dest_top + "%";
-	elem.style.bottom = elem.dest_bottom + "%";
 
 	var update = function(evt) {
 		var updated = 0;
