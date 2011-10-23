@@ -93,6 +93,10 @@ textinput.onchange = function(evt) {
 	searched = false;
 	searchbutton.enabled = true;
 }
+textinput.onkeydown = function(evt) {
+	if (evt.keyCode == 13)
+		searchbutton.onclick(evt);
+}
 searchbutton.innerHTML = 'Wyślij zapytanie';
 searchbutton.enabled = false;
 attach_text_listener(textinput, textinput.onchange);
