@@ -34,11 +34,12 @@ class SearchHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 		self.server.close_request(self.request);
 
 	def respond(self, answer):
+		answer = answer.encode("utf8")
 		self.send_response(200)
 		self.send_header("Content-type", "text/javascript")
 		self.send_header("Content-Length", len(answer))
 		self.end_headers()
-		self.wfile.write(answer.encode("utf8"))
+		self.wfile.write(answer)
 
 	def do_GET(self):
 		"""Serve a GET request."""
