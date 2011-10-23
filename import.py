@@ -137,6 +137,18 @@ for path, dir, files in os.walk(searchpath):
 		if '0' in graph:
 			node_depth_update(graph, depthmap, '0')
 		for el in root:
+			if el.tag != 'answer-data':
+				continue
+			for subel in el:
+				if subel.tag != 'base-answer':
+					continue
+				if 'type' not in subel.attrib:
+					continue
+				if subel.attrib['type'] == 'NO_TREE':
+					selmap = { n: 0 for n in selmap }
+				break
+			break
+		for el in root:
 			if el.tag != 'node':
 				continue
 			newnid = int(el.attrib['nid'])
