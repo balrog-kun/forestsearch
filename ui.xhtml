@@ -525,7 +525,7 @@ function ss_show(evt, num) {
 /* Try to find a tree in a forest containing all of the nodes that formed
  * the set matching the current query.  In general this may not be possible
  * but we try nevertheless.  */
-function set_tree(forest) {
+function set_tree_orig(forest) {
 	var nodes = res_list.results[res_forest.cur_res].
 			nodes[res_forest.cur_hit];
 	var parents = {};
@@ -551,7 +551,9 @@ function set_tree(forest) {
 						child[chnum].nid;
 				if (!(subnid in parents))
 					parents[subnid] = {};
-				parents[subnid][nid] = parseInt(rnum);
+				if (!(nid in parents[subnid]))
+					parents[subnid][nid] = {};
+				parents[subnid][nid][parseInt(rnum)] = 0;
 			}
 	}
 
@@ -592,16 +594,123 @@ function set_tree(forest) {
 					p = supnid;
 					break;
 				}
-			if (p in fixed)
+			if (p in fixed) {
 				/* Either there's nothing to do or there's
 				 * nothing that can be done and we give up
 				 * for this node */
+				forest.nodes[p].current = find_common(
+						forest.nodes[p].current,
+						parents[nid][p]);
 				break;
+			}
 			fixed[p] = 0;
 			forest.nodes[p].current = parents[nid][p];
 			nid = p;
 		}
 	}
+
+	for (var nid in forest.nodes) {
+		var node = forest.nodes[nid];
+		if (!('current' in node))
+			continue;
+		if (typeof(node.current) == 'object')
+			for (var c in node.current) {
+				node.current = c;
+				break;
+			}
+	}
+
+	return forest;
+}
+
+function find_common(a, b) {
+	if (typeof(a) != 'object')
+		return a;
+	var r = {}, cnt = 0;
+	for (var c in a)
+		if (c in b)
+			r[c] = cnt ++;
+	if (cnt > 1)
+		return r;
+	if (cnt < 1)
+		r = a;
+	for (var c in r)
+		return c;
+}
+
+/* Newer, better */
+function set_tree(forest) {
+	var nodes = res_list.results[res_forest.cur_res].
+			nodes[res_forest.cur_hit];
+	var parents = {};
+	var score = {};
+
+	for (var nid in forest.nodes) {
+		var node = forest.nodes[nid];
+		if (!('children' in node))
+			continue;
+		for (var rnum in node.children)
+			for (var chnum  in node.children[rnum].child) {
+				var subnid = node.children[rnum].
+						child[chnum].nid;
+				if (!(subnid in parents))
+					parents[subnid] = {};
+				parents[subnid][nid + '-' + rnum] = 0;
+			}
+	}
+
+	for (var nnum in nodes) {
+		var done = {};
+		var nids = [ nodes[nnum] ];
+		while (nids.length) {
+			var nid = nids.shift();
+			if (nid in done || !(nid in parents))
+				continue;
+			for (var p in parents[nid]) {
+				if (p in done)
+					continue;
+				done[p] = 0;
+				var pn = p.pysplit('-');
+				if (!(pn[0] in score))
+					score[pn[0]] = {};
+				if (!(pn[1] in score[pn[0]]))
+					score[pn[0]][pn[1]] = 0;
+				score[pn[0]][pn[1]] ++;
+				nids.push(pn[0]);
+			}
+			done[nid] = 0;
+		}
+	}
+
+	/* There's some space for improvement here as well, for example
+	 * when faced with more than one rule with the max score, we could
+	 * try to select the one which preserves the biggest number of
+	 * nodes visible from the current tree or .chosen nodes.  */
+	var set_new = function(nd) {
+		if (!('children' in nd) || !(nd.nid in score))
+			return;
+		var max = 0;
+		var maxset;
+		for (var n in score[nd.nid])
+			if (score[nd.nid][n] > max) {
+				max = score[nd.nid][n];
+				maxset = {};
+				maxset[n] = 0;
+			} else if (score[nd.nid][n] == max)
+				maxset[n] = 0;
+		if (!(nd.current in maxset)) {
+			if (nd.chrule in maxset)
+				nd.current = nd.chrule;
+			else for (var n in maxset) { /* Pick the 1st option */
+				nd.current = parseInt(n);
+				alert("" + n + " of " + nd.children.length);
+				break;
+			}
+		}
+		for (var chnum in nd.children[nd.current].child)
+			set_new(nd.children[nd.current].child[chnum]);
+	}
+	set_new(forest.root);
 
 	return forest;
 }
@@ -831,7 +940,7 @@ function adapt_schema(obj) {
 			if (heads.length)
 				r.heads = heads;
 			if (!('current' in node) && r.chosen)
-				node.current = parseInt(rulenum);
+				node.current = node.chrule = parseInt(rulenum);
 		}
 	}
 
