@@ -208,10 +208,8 @@ def p_node_rel_nary(t):
 
 def p_node_desc_list(t):
 	'''node_desc_list : node_desc
-	                  | node_desc COMMA node_desc_list'''
-	t[0] = [ t[1] ]
-	if len(t) > 2:
-		t[0] += t[3]
+	                  | node_desc_list COMMA node_desc'''
+	t[0] = (t[1] if len(t) > 2 else []) + [ t[len(t) - 1] ]
 
 def p_node_desc(t):
 	'''node_desc : LBRACKET feat_constraint RBRACKET
