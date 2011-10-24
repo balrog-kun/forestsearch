@@ -160,8 +160,7 @@ precedence = (
 )
 
 def p_node_expr_simple(t):
-	'''node_expr : node_desc
-	             | node_rel'''
+	'node_expr : node_rel'
 	t[0] = t[1][0:2]
 def p_node_expr_group(t):
 	'node_expr : LPAREN node_expr RPAREN'
@@ -173,13 +172,17 @@ def p_node_expr_oper(t):
 	t[0] = ( check_dupes(t[1][0], t[3][0]),
 		'(' + t[1][1] + ') ' + oper + ' (' + t[3][1] + ')' )
 
+def p_node_rel_dummy(t):
+	'node_rel : node_desc'
+	t[0] = t[1]
 def p_node_rel_binary(t):
-	'''node_rel : node_desc DOMINANCE node_desc
-	            | node_desc PRECEDENCE node_desc
-	            | node_desc SIBLING node_desc'''
+	'''node_rel : node_rel DOMINANCE node_desc
+	            | node_rel PRECEDENCE node_desc
+	            | node_rel SIBLING node_desc'''
 	t[0] = ( check_dupes(t[1][0], t[3][0]),
 		'(' + t[1][1] + ') AND (' + t[3][1] + ') AND ' +
-		get_rel(t[2], t[1][3] or t[3][3], t[1][2], t[3][2]) )
+		get_rel(t[2], t[1][3] or t[3][3], t[1][2], t[3][2]),
+		t[3][2], t[3][3] )
 
 def p_node_rel_nary(t):
 	'node_rel : ID LPAREN node_desc_list RPAREN'
