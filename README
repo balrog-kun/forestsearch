@@ -1,6 +1,6 @@
 This is a very simple search engine for the data of the treebank that
-is going to become part of the Narodowy Korpus Języka Polskiego
-(www.nkjp.pl).  It can be used to find nodes in the syntactic
+is going to become part of the Składnica Frazowa corpus for Polish
+sentences.  It can be used to find nodes in the syntactic
 trees of natural language sentences of the corpus, which posess some
 or all of the properties indicated in the search query given.  Search
 queries are given by the web user in the TIGERSearch-like query
@@ -8,8 +8,11 @@ language.  The user may search for a single node possessing some
 property, a group of nodes (a subforest) that stand in some relation,
 an entire tree or an entire forest of possible derivation trees.
 
+A more complete description of the language and a usage manual are
+available in the file ui.xhtml.
+
 The main dependencies for running the search engine currently are:
- * a treebank in a format compatible with that of NKJP,
+ * a treebank in a format compatible with that of Składnica Frazowa,
  * postgresql >= 8.4 (tested with 8.4.8)
  * python 3 (tested with 3.1.3)
  * psycopg2 (tested with 2.4.2)
@@ -25,3 +28,22 @@ user the database owner.)  Example:
 $ psql <<< "CREATE DATABASE treebank WITH owner = joehacker encoding = 'UNICODE' template = template0;"
 $ createlang plpgsql treebank
 $ psql -d treebank -f /usr/share/postgresql-8.4/contrib/hstore.sql
+
+Given a treebank as a set of .xml files in a structure of directories, run
+the script "import.py" giving it as a parameter the path to the topmost
+directory in the treebank.  The script will search for files matching
+"mortph*-s.xml", load them into postgres and create basic indexes.
+Additional indexes can be added to speed up types queries that take too
+long.  NOTE that any trees already in the database will be dropped first.
+Switch the user as appropriate before importing.
+
+$ ./import.py zrobione110728/
+
+To start the http server run the script "server.py".  This script needs
+to be run from inside the directory containing all of the search engine's
+files.  It will query the local postgres database named "treebank" and
+return search results from it.  Run the server as a user with SELECT
+rights on that database and, if possible, no other rights.  New versions
+of treebank data can be imported using "import.py" without interrupting
+the server.  The default HTTP port number used is 8000, this can be
+changed by editing the script (towards the end of the file).
