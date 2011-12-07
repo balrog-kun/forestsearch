@@ -19,8 +19,250 @@
   <div id="res_list" />
   <div id="res_forest"><div id="res_dpy" /></div>
   <div id="helpdiv"><div>
-   <p>FIXME Tu powinny znaleść się informacje o języku zapytań</p>
-   <p>FIXME i o korpusie?</p>
+   <h5>Wyszukiwarka</h5>
+   <p>Poniżej znajdują się podstawowe instrukje korzystania z aplikacji.
+    Strona ta pozwala na wyszukiwanie lasów, drzew, poddrzew czy
+    pojedynczych węzłów spełniających zadane warunki wewnątrz korpusu
+    lasów analizy składniowej w projekcie Składnica Frazowa.  Korpus
+    składa się z wyników analizy kilkunastu tysięcy zdań języka polskiego,
+    gdzie wszystkie lasy razem zawierają ponad milion węzłów (jednostek
+    składniowych na różnych poziomach).</p>
+   <p>Wyszukiwanie odbywa się przez wpisanie zapytania w polu na górze,
+    i wysłanie zapytania przyciskiem „Szukaj”.  Zapytania należy
+    formułować w specjalnym języku, który pozwala wyrazić różne typy
+    wymagań odnośnie szukanego zbioru.  Język ten opisany jest
+    poniżej; przejdź od razu do następnej sekcji aby wypróbować działanie
+    wyszukiwarki.</p>
+   <p>Po chwili od wysłania zapytania serwer zwróci wyniki wyszukiwania,
+    które będziemy mogli przeglądać w wygodnej formie.  Czas potrzebny
+    na otrzymanie wyniku jest oczywiście zależny od samego zapytania i
+    może wahać się od ułamka sekundy do trzydziestu sekund.  Zależność
+    ta jest trudna do odgadnięcia ze względu na różne stopnie trudności
+    sprawdzenia zachodzenia relacji odpowiadających operatorom języka,
+    (nie)zależności między nimi i istnienie lub nieistnienie indeksów
+    dla danego atrybutu czy zbioru atrybutów po stronie serwera.
+    Serwer zwraca za każdym razem do 20 wyników, traktując jako jeden
+    wynik zdanie, którego las analizy zawiera conajmniej jeden
+    podzbiór węzłów pasujący do zapytania.  Dla każdego znalezionego
+    zdania podawane są wszystkie takie zbiory, przy czym może być ich
+    bardzo wiele.  Interfejs przeglądarki pozwala poruszać się po
+    liście wszystkich pasujących zdań przechodząc do kolejnych lub
+    poprzednich 20 wyników wyszukiwania.  Jeśli serwer nie jest w
+    stanie odpowiedzieć na zapytanie w przeciągu 30 sekund, przerywa
+    wyszukiwanie i zwraca informację o tym fakcie.</p>
+   <p>Przy przeglądaniu wyników widoczna jest również liczba
+    wszystkich zdań pasujących do zapytania.  Jeśli ocenimy, że jest
+    ona zbyt duża, prawdopodobnie wygodniej będzie przeformułować
+    nasze zapytanie uściślając je tak, aby interesujące nas wyniki
+    mieściły się na pierwszej stronie, zamiast przeglądać całą
+    listę analizując struktury zdań samemu.  Szukanie igły w stogu
+    siana jest ostatecznie głównym zadaniem wyszukiwarki.</p>
+   <p>Jeśli nasze zapytania zajmują serwerowi zbyt długo, również
+    warto spróbować je przeformułować.</p>
+   <p>Kolejność zwracanych wyników nie jest zdefiniowana.</p>
+   <p>Należy zauważyć, że korpus zawiera wszystkie drzewa analizy
+    pasujące do pewnego słownika i pewnej gramatyki, a więc zdania
+    poprawne gramatycznie i potencjalnie niepoprawne logicznie.
+    Oprócz tego dla każdego zdania zawiera informację o tym, czy
+    wśród podanych drzew znajduje się struktura poprawna logicznie,
+    i w tych przypadkach również wskazuje na dokładnie jedną z
+    takich struktur.  Wyszukiwarka wykorzystuje tą informację aby
+    opcjonalnie ograniczyć wyszukiwanie do drzew poprawnych, lub
+    (w przeciwnym wypadku) oznaczyć wyniki niezawierające poprawnej
+    struktury (a zawierającej tylko struktury niepoprawne)
+    czerwonym znakiem X przy wyświetlaniu listy wyników.</p>
+   <h5>Język zapytań</h5>
+   <p>Kryteria wyszukiwania podawane są specjalnym językiem, jak
+    w wyszukiwarkach internetowych.  Język ten pozwala zadawać
+    całkiem skomplikowane warunki odnoszące się do atrybutów
+    węzłów w lasach analizy i relacji pomiędzy węzłami w jednym
+    drzewie lub lesie.  Kosztem tego jest mało intuicyjna składnia
+    języka, co wymaga od jego użytkownika zapoznania się z opisem
+    tej składni.</p>
+   <p>Struktura oparta jest na języku TIGERSearch, z projektu TIGER,
+    który używany jest przez inną wyszukiwarkę drzew w treebankach.
+    Kompatybilność z TIGERSearch nie została sprawdzona, natomiast
+    w niniejszej wyszukiwarce świadomie wprowadzono kilka modyfikacji
+    w następujących celach:
+    <ul>
+     <li>przystosowanie języka do wyszukiwania w pełnych lasach
+      analizy, a więc strukturach mogących zawierać wiele drzew i
+      częściową informację o logicznej poprawności drzew -- zobacz
+      szczegółowe informacje w opisie projektu Składnica Frazowa.
+      TIGERSearch zaprojektowano do wyszukiwania w korpusach
+      pojedynczych drzew analizy.</li>
+     <li>wzbogacenie zbiorów dostępnych operatorów o nowe przydatne
+      relacje i dodanie uproszczonej składni dla niektórych częstych
+      zapytań.</li>
+    </ul>
+   </p>
+   <p>Wierzchołkami lasów analizy w korpusie są węzły reprezentujące
+    jednostki składniowe.  Węzły nieterminalne posiadają listy
+    węzłów potomnych odpowiadające różnym interpretacjom danej
+    jednostki przez podział na jednostki niższego poziomu.  Oprócz tego
+    węzeł nieterminalny ma swoją kategorię składniową i zbiór
+    atrybutów.  Lista atrybutów i dozwolonych wartości zależy od
+    kategorii jednostki.</p>
+   <p>Najprostsze zapytanie będzie odnosiło się do pojedynczego węzła,
+    a więc wyszuka wszystkie węzły posiadające określone właściwości.
+    Wyrażenie sprawdzające zachodzenie pewnej własności może składać
+    się w najprostszym przypadku z porównania pewnego atrybutu węzła
+    z podaną wartością:
+    <pre>category = "zdanie"</pre>
+    <pre>category != "zdanie"</pre>
+    Dla uproszczenia atrybuty składniowe, kategoria i kilka innych
+    własności węzła traktowane są w ten sam sposób.  Po lewej stronie
+    operatora porównania wartości podajemy nazwę prównywanego atrubytu,
+    po prawej specyfikację interesujących nas wartości.</p>
+   <p>Najważniejsze atrybuty wierzchołków to:
+    <ul>
+     <li>„cat” lub „category” - kategoria składniowa nieterminala</li>
+     <li>„osoba”, „czas”, „ink”, „neg”, „liczba”, „klasa”,
+      „stopień”, „aspekt”, „tryb” itd. - atrybuty składniowe nieterminala.
+      Ich obecność jest zależna od kategorii wyrażenia.</li>
+     <li>„orth” - odcinek tekstu reprezentowany przez terminal (forma
+      oryginalna wyrazu)</li>
+     <li>„base” - forma podstawowa wyrazu reprezentowanego przez terminal</li>
+     <li>„tag” - etykieta terminala zawierająca część mowy i ewentualne
+     atrybuty składniowe</li>
+    </ul>
+    I rzadziej używane: „id” lub „nid”, „treeid”, „depth”,
+    „children”, „rules”, „f”, „from”, „to”, „terminal”, „sel”.
+   </p>
+   <p>Zamiast podawać konkretny ciąg znaków w cudzysłowie możemy
+    zdefiniować zbiór pożądanych wartości używając wyrażeń regularnych
+    ograniczonych znakami "/" lub łącząc kilka zbiorów operatorami
+    koniunkcji "&amp;", alternatywy "|".  Obsługa wyrażeń regularnych
+    jest w dużej mierze zgodna ze standardami POSIX, ale pasujący
+    podciąg musi być równy całości porównywanego ciągu, a więc tak,
+    jakby podane wyrażenie zaczynało się od ^ i kończyło $.
+    <pre>orth = /.*ąc/</pre>
+    <pre>category = "zdanie" | "wypowiedzenie" | /p.*/</pre>
+    <pre>base = /.*ć/ &amp; /b.*/</pre>
+    Można też podać dopełnienie zbioru i uściślać definicje za
+    pomocą nawiasów.
+    <pre>category = ((!"zdanie") &amp; (!"wypowiedzenie"))</pre>
+    <pre>category = (!("zdanie" | "wypowiedzenie"))</pre>
+    </p>
+   <p>Atrybuty „terminal” i „sel” mają wartości binarne ("dany węzeł
+    jest terminalny" i "dany węzeł należy do drzewa wybranego jako poprawna
+    interpretacja zdania"), a więc można ich używać jako predykatów, bez
+    użycia operatora porównania.</p>
+   <p>Predykaty łączyć można operatorami logicznymi &amp; i |, negować
+    i grupować nawiasami:
+    <pre>category = "zdanie" &amp; sel &amp; !(aspekt = "nd")</pre>
+   </p>
+   <p>Wartość porównywanego atrybutu można przypisać zmiennej, tak
+    aby porównać ją z wartością innego atrybutu, tego samego lub
+    innego wierzchołka w zapytaniu.  Składnia deklaracji zmiennej
+    wygląda następująco:
+    <pre>atrybut = #zmienna: zbiórwartości</pre>
+    Następnie deklarując inny zbiór wartości możemy użyć ciągu
+    <pre style="display: inline">#zmienna</pre>, który będzie odpowiadał
+    wartości naszego atrybutu.  W następujący sposób wymagamy aby base i
+    orth miały identyczną wartość:
+    <pre>base = #podstawowa: /.*szny/ &amp; orth = #podstawowa</pre>
+    Jest to jeden z trzech typów zmiennych dostępnych w języku TIGERSearch.
+   </p>
+   <p>Mając już wyrażenie określające interesujące nas własności
+    wierzchołka, umieszczamy je w nawiasach kwadratowych aby uzyskać
+    zapytanie w języku TIGERSearch:
+    <pre>[ category = "zdanie" ]</pre>
+    Do takiego zapytania pasują wszystkie wierzchołki o zadanej kategorii
+    składniowej i należące do drzewa wybranego jako poprawne, a więc tak,
+    jakby w specyfikacji wierzchołka był predykat <pre>sel</pre>.
+    Wynikami zapytania będą zbiory składające się z jednego wierzchołka.</p>
+   <p>Aby zapytać o wszystkie wierzchołki, również te nienależące do
+    wybranego drzewa w lesie, musimy użyć podwójnych nawiasów:
+    <pre>[[ category = "zdanie" ]]</pre>
+    Poprzednie zapytanie było równoznaczne z
+    <pre>[[ category = "zdanie" &amp; sel ]]</pre>
+   </p>
+   <p>Nawiasy mogą być puste ([] lub [[]]) co będzie oznaczało dowolny
+    wierzchołek.</p>
+   <p>Również specyfikacje wierzchołków możemy łączyć operatorami i
+    nawiasami w bardziej skomplikowane wyrażenia, które będą wybierały
+    z korpusu lasy posiadające węzły o konkretnych właściwościach.
+    Wynikami takich zapytań będą zbiory tylu węzłów, ile wyspecyfikowano
+    w zapytaniu.  Zapytanie o N węzłów może więc wyprodukować aż
+    M^N wyników dla jednego lasu o M wierzchołkach.</p>
+   <p>Uwaga: negacja wierzchołka wybiera las posiadający wierzchołek
+    niepasujący do zadanego kryterium, nie zaś las niezawierający
+    wierzchołka pasującego do kryterium.</p>
+   <p>Zmienne zdefiniowane wewnątrz specyfikacji jednego wierzchołka
+    mogą być użyte poza nią.  Oprócz zmiennych odnoszących się do
+    konkretnych wartości (ciągów znaków), możemy zmiennej przypisać
+    cały predykat.  Pozwala to na zdefiniowanie predykatu w jednym
+    miejscu zapytania i wykorzystaniu go w specyfikacjach kilku
+    wierzchołków.  Nie zwiększa jednak mocy wyrażeń języka.  Składnia
+    definicji oraż użycia takich zmiennych jest podobna jak w
+    pierwszym przypadku, z tym, że deklaracja poprzedza cały
+    predykat, a nie zbiór wartości atrybutu.</p>
+   <h5>Relacje wierzchołków</h5>
+   <p>Ważnym elementem języka zapytań są relacje na wierzchołkach, dzięki
+    którym możemy wyszukać specyficzne struktury składniowe.  Zdefiniowane
+    zostały następujące relacje.  Ich argumentami są specyfikacje
+    wierzchołków (poniżej A, B, C..).
+    <table>
+     <tr><th>Relacja</th><th>Zapis</th><th></th></tr>
+     <tr><td>bezpośredni nadrzędnik</td><td>A &gt; B</td>
+      <td class="desc">A jest rodzicem B w pewnym drzewie</td></tr>
+     <tr><td>nadrzędnik</td><td>A &gt;* B</td>
+      <td class="desc">B należy do pewnego poddrzewa A (B != A)</td></tr>
+     <tr><td>nadrzędnik z etykietą</td><td>A &gt;R B</td>
+      <td class="desc">w pewnym drzewie A jest rodzicem B,
+      który wyprowadzono regułą R</td></tr>
+     <tr><td>nadrzędnik</td><td>A &gt;N B</td>
+      <td class="desc">B należy do pewnego poddrzewa A, ścieżka A-B ma
+      długość N</td></tr>
+     <tr><td>nadrzędnik</td><td>A &gt;M,N B</td>
+      <td class="desc">B należy do pewnego poddrzewa A, ścieżka A-B ma długość
+      między M i N</td></tr>
+     <tr><td>bezpośrednie poprzedzanie</td><td>A . B</td>
+      <td class="desc">A poprzedza B (inaczej fraza B zaczyna się tam
+      gdzie kończy się A)</td></tr>
+     <tr><td>poprzedzanie</td><td>A .* B</td>
+      <td class="desc">B występuje po A</td></tr>
+     <tr><td>poprzedzanie</td><td>A .N B</td>
+      <td class="desc">B zaczyna się N wyrazów od końca A</td></tr>
+     <tr><td>poprzedzanie</td><td>A .M,N B</td>
+      <td class="desc">B zaczyna się między M a N wyrazów od końca A</td></tr>
+     <tr><td>lewy terminal</td><td>A &gt;@l B</td>
+      <td class="desc">B jest terminalem w
+      pewnym poddrzewie A i żaden inny terminal go nie poprzedza</td></tr>
+     <tr><td>prawy terminal</td><td>A &gt;@r B</td>
+      <td class="desc">B jest terminalem w
+      pewnym poddrzewie A i nie poprzedza żadnego innego terminala</td></tr>
+     <tr><td>centralny terminal</td><td>A &gt;@c B</td>
+      <td class="desc">B jest terminalem w pewnym poddrzewie A i istnieje
+      ścieżka z A do B prowadząca gałęziami głównymi</td></tr>
+     <tr><td>rodzeństwo</td><td>A $ B</td>
+      <td class="desc">A i B mają w pewnym drzewie wspólnego rodzica</td></tr>
+     <tr><td>rodzeństwo i poprzedzanie</td><td>A $.* B</td>
+      <td class="desc">A i B mają w pewnym drzewie wspólnego rodzica i A
+      występuje przed B</td></tr>
+     <tr><td>korzeń</td><td>root(A)</td>
+      <td class="desc">A jest korzeniem lasu</td></tr>
+     <tr><td>pokrewieństwo</td><td>same_tree(A, B)</td>
+      <td class="desc">istnieje drzewo zawierające A i B</td></tr>
+    </table></p>
+   <p>Tak jak specyfikacja wierzchołka, relacja może występować na najniższym
+    poziomie wyrażenia i kilka relacji może być połączonych operatorami
+    w większe wyrażenie.</p>
+   <p>Te z powyższych operatorów, które zapisane są infiksowo można
+    również stosować dla więcej niż dwóch węzłów stosując zapis:
+    <pre>A r B r C</pre>
+    gdzie r jest operatorem, przykładowo
+    <pre>A &gt; B &gt; C</pre>
+    Efekt takiego wyrażenia jest taki jak A &gt; B &amp; D &gt; C, gdzie
+    B i D są tym samym węzłem.  W związku z tym wynik wyszukiwania zawiera
+    tylko trzy węzły.</p>
+   <p>Inna, bardziej uniwersalna konstrukcja takiego zapytania
+    wykorzystuje trzeci rodzaj zmiennych, takich, którym przypisany jest
+    wierzchołek.  Tym razem deklaracja zmiennej poprzedza specyfikację
+    węzła, a sama zmienna może zostać użyta w relacjach z innymi
+    węzłami.  Powyższe zapytanie przyjmuje wtedy postać:
+    <pre>A &gt; #b: B &amp; #b &gt; C</pre></p>
    <p>Bardziej kompletny opis języka zapytań TIGERSearch znajduje się
     w instrukcji do wyszukiwarki TIGERSearch (<a href='http://www.ims.uni-stuttgart.de/projekte/TIGER/TIGERSearch/manual_html.html'>HTML</a>,
     <a href='http://www.ims.uni-stuttgart.de/projekte/TIGER/TIGERSearch/doc/pdf/manual.pdf'>PDF</a>,

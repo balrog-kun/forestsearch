@@ -511,7 +511,7 @@ input.searchinput:hover {
 	box-shadow: 0 0 8px 3px #ccc;
 }
 
-#res_list, #help {
+#res_list, #helpdiv {
 	overflow-y: auto;
 }
 #res_forest {
@@ -520,6 +520,27 @@ input.searchinput:hover {
 #helpdiv {
 	font-family: 'Verdana';
 	padding: 1em;
+	text-align: justify;
+}
+#helpdiv * pre {
+	margin: 0.5em 2em;
+	padding: 0.2em 1em;
+	background: #e0ffe0;
+}
+#helpdiv * td, #helpdiv * th {
+	white-space: nowrap;
+	text-align: center;
+}
+#helpdiv * td.desc {
+	white-space: normal;
+	text-align: left;
+}
+#helpdiv * tr:nth-child(even) {
+	background-color: #f5f5f5;
+}
+#helpdiv * table {
+	empty-cells: hide;
+	border-spacing: 0;
 }
 
 #res_dpy {
