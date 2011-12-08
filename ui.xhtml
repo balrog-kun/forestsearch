@@ -372,8 +372,8 @@ searchbutton.onclick = function(evt) {
 
 res_list.send_query = function() {
 	var query = this.offset ?
-		'/searchat/' + this.offset + '/' + this.query :
-		('/search/' + this.query);
+		'searchat/' + this.offset + '/' + this.query :
+		('search/' + this.query);
 	request_send(query, function(resp) {
 			if (typeof(resp) != 'object') {
 				res_list.set_message('Serwer twierdzi: ' +
@@ -398,7 +398,7 @@ res_list.send_count_query = function() {
 		return;
 	res_list.res_count = -2;
 
-	var query = '/searchcount/' + this.query;
+	var query = 'searchcount/' + this.query;
 	request_send(query, function(resp) {
 			if (typeof(resp) != 'object')
 				res_list.res_count = -3;
