@@ -1,0 +1,68 @@
+#! /usr/bin/python3
+#
+# Copyright (©) 2011  Andrzej Zaborowski
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#
+# NOTE: do not run this on computers on untrusted networks -- input may
+# need to be validated in a couple of places.
+#
+import os, tigerquery, sys
+
+tcmd = os.environ['REQUEST_URI'][len(os.environ['SCRIPT_NAME']) + 1:]
+req = os.environ['SCRIPT_NAME']
+cmd = b''
+i = 0
+fromhex = { '0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7,
+	'8': 8, '9': 9, 'A': 10, 'B': 11, 'C': 12, 'D': 13, 'E': 14, 'F': 15 }
+while i < len(tcmd):
+	if tcmd[i] == '%':
+		ch = (fromhex[tcmd[i + 1]] << 4) | fromhex[tcmd[i + 2]]
+		i += 2
+	else:
+		ch = ord(tcmd[i]) & 255
+	cmd += bytes([ ch ])
+	i += 1
+
+def to_jstr(s):
+	return '\'' + s.replace('\'', '\\\'').replace('\n', '\\\n') + '\'';
+
+stdout = sys.stdout.detach()
+stdout.write(b'\n')
+
+def handle(req, tiger):
+	if req.endswith('search'):
+		offset = 0
+	elif req.endswith('searchat'):
+		offset, tiger = tiger.split('/', 1)
+		offset = int(offset)
+	elif req.endswith('searchcount'):
+		resp, sql = tigerquery.count(tiger)
+		return 'var ret = { count: ' + str(resp) + \
+			', sql: ' + to_jstr(sql) + ' }'
+	else:
+		raise Exception('Unknown request')
+	resp, sql = tigerquery.query(tiger, offset)
+	return 'var ret = { hits: [' + \
+		','.join([ '\n  { path: \'' + x[0] + \
+			'\', nodes: [ ' + \
+			', '.join([ repr(list(y)) for y \
+				in zip(*x[1:]) ]) + \
+			' ] }' for x in resp ]) + \
+		'\n], sql: ' + to_jstr(sql) + ' }'
+
+try:
+	stdout.write(handle(req, cmd.decode('utf8')).encode('utf8'))
+except Exception as e:
+	stdout.write(b'var ret = ' + to_jstr(str(e)).encode('utf8'))
