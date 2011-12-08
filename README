@@ -39,6 +39,10 @@ Switch the user as appropriate before importing.
 
 $ ./import.py zrobione110728/
 
+Now load the stored procedures used by the search engine.
+
+$ psql -d treebank -f operators.sql
+
 To start the http server run the script "server.py".  This script needs
 to be run from inside the directory containing all of the search engine's
 files.  It will query the local postgres database named "treebank" and
