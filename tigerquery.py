@@ -303,7 +303,7 @@ def p_feat_val_expr_string(t):
 	t[0] = '####featname = ' + t[1]
 def p_feat_val_expr_re(t):
 	'feat_val_expr : RE'
-	re = t[1].replace('\'', '\\\'')
+	re = t[1].replace('\\', '\\\\').replace('\'', '\\\'')
 	if re[0] != '^':
 		re = '^' + re
 	if re[-1] != '$':
