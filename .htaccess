@@ -1,4 +1,4 @@
 Options +ExecCGI
-<Files search>
+<Files search*>
 SetHandler cgi-script
 </Files>
