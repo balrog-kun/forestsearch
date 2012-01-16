@@ -296,10 +296,10 @@ def p_feat_val_simple(t):
 	if t[1] in [ 'orth', 'base', 'category' ]:
 		featname = t[1]
 	elif t[1] in [ 'id', 'treeid', 'depth', 'terminal', 'sel', 'f',
-			'children', 'rules' ]:
+			'children', 'rules', 'frompos', 'topos' ]:
 		featname = t[1] + '::text'
-	elif t[1] in [ 'frompos', 'topos' ]:
-		featname = t[1][:-3] + '::text'
+	elif t[1] in [ 'from', 'to' ]:
+		featname = t[1] + 'pos::text'
 	elif t[1] in [ 'nid' ]:
 		featname = 'id::text'
 	else:
