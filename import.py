@@ -165,10 +165,16 @@ for path, dir, files in os.walk(searchpath):
 		nid += maxnid + 1
 		tree += 1
 
-conn.commit()
-print('Changes committed')
-# TODO: indexes
-curs.execute('CREATE INDEX node_treeid_idx ON node ( treeid )')
+curs.execute('CREATE INDEX node_treeid ON node ( treeid )')
+curs.execute('CREATE INDEX node_treeid_sel ON node ( treeid, sel )')
+curs.execute('CREATE INDEX node_cat ON node ( category )')
+curs.execute('CREATE INDEX node_cat_sel ON node ( category, sel )')
+curs.execute('CREATE INDEX node_f ON node USING gin ( f )')
+curs.execute('CREATE INDEX node_orth ON node ( orth )')
+curs.execute('CREATE INDEX node_base ON node ( base )')
+print('Indexed')
 curs.execute('ANALYZE node')
 curs.execute('ANALYZE tree')
 print('Analyzed')
+conn.commit()
+print('Committed')
