@@ -732,12 +732,14 @@ function tree_show(evt) {
 		res_forest.viewer.borderwidth = 2;
 		res_forest.viewer.nativescroll = true;
 		res_forest.viewer.fixed_height = true;
-	} else if (res_forest.cur_res == this.num && res_forest.viewer.forest)
+	} else if (res_forest.cur_res == this.num && res_forest.viewer.forest &&
+			res_forest.search_sn == res_list.search_sn)
 		return;
 	if ('ssv' in res_forest)
 		res_forest.ssv.forest = null;
 	res_forest.dpy.overflow = 'auto';
 	res_forest.cur_res = this.num;
+	res_forest.search_sn = res_list.search_sn;
 	res_forest.cur_hit = 0;
 	res_forest.viewer.forest = set_tree(
 			new forest(res.data.nodes, res.data.root));
