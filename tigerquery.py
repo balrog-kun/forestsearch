@@ -233,7 +233,7 @@ def p_node_rel_infix_binary(t):
 	t[0] = ( check_dupes(t[1][0], t[3][0]),
 		'(' + t[1][1] + ') AND (' + t[3][1] + ') AND ' +
 		get_rel(t[2], t[1][3] or t[3][3], t[1][2], t[3][2]),
-		t[3][2], t[3][3], t[1][4] + t[2][4] )
+		t[3][2], t[3][3], t[1][4] + t[3][4] )
 
 def p_node_desc_list(t):
 	'''node_desc_list : node_desc
