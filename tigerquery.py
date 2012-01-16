@@ -155,7 +155,7 @@ precedence = (
 	( 'right', 'NOT', 'VARDECL' ),
 	( 'left', 'OR' ),
 	( 'left', 'AND' ),
-	( 'left', 'EQ' ),
+	( 'nonassoc', 'EQ' ),
 	( 'left', 'DOMINANCE', 'PRECEDENCE', 'SIBLING' )
 )
 
@@ -184,6 +184,19 @@ def p_node_expr_oper(t):
 	t[0] = ( check_dupes(t[1][0], t[3][0]),
 		'(' + t[1][1] + ') ' + oper + ' (' + t[3][1] + ')',
 		t[1][2] + t[3][2] )
+def p_node_expr_not(t):
+	'node_expr : NOT node_query'
+	# It doesn't make sense to allow a nested query with no nodes
+	# (no FROM clause) but SQL allows that and for completeness of
+	# our syntax we'll just deal with it, too.
+	sqlfrom = ''
+	if t[2][1]:
+		sqlfrom = ' FROM ' + \
+			', '.join([ 'node AS ' + i for i in t[2][1] ])
+	t[0] = ( {},
+		'(SELECT COUNT(1)' + sqlfrom + ' WHERE ' + t[2][0] +
+		' LIMIT 1) = 0',
+		[] )
 
 def p_node_rel_dummy(t):
 	'node_rel : node_infix_rel'
@@ -363,10 +376,9 @@ def query(tiger, offset):
 	if '#' in where:
 		raise Exception('found uses of undefined variables')
 
-	sql = 'SELECT filename, ' + \
-		', '.join([ 'array_agg(' + i + '.id - nid)' \
-			for i in nodes ]) + \
-		' FROM ' + ', '.join([ 'node as ' + i for i in nodes ] +
+	sql = 'SELECT ' + ', '.join([ 'filename' ] +
+			[ 'array_agg(' + i + '.id - nid)' for i in nodes ]) + \
+		' FROM ' + ', '.join([ 'node AS ' + i for i in nodes ] +
 				[ 'tree' ]) + \
 		' WHERE ' + where + \
 		' GROUP BY filename' + \
@@ -388,14 +400,14 @@ def count(tiger):
 	# out how to force a sensible query plan
 	sql = 'WITH RECURSIVE t AS (SELECT -1 AS treeid UNION ALL SELECT (' + \
 		'SELECT min(n0.treeid) AS treeid' + \
-		' FROM ' + ', '.join([ 'node as ' + i for i in nodes ]) + \
+		' FROM ' + ', '.join([ 'node AS ' + i for i in nodes ]) + \
 		' WHERE n0.treeid > t.treeid AND ' + where + \
 		') FROM t WHERE t.treeid IS NOT NULL)' + \
 		' SELECT COUNT(1) - 1 FROM t'
 	# For now we use a COUNT DISTINCT, which may be really slow sometimes
 	# XXX: selecting from tree could be avoided when no nested queries
 	sql = 'SELECT COUNT(DISTINCT tree.id)' + \
-		' FROM tree' + ''.join([ ', node as ' + i for i in nodes ]) + \
+		' FROM tree' + ''.join([ ', node AS ' + i for i in nodes ]) + \
 		' WHERE ' + where
 
 	curs.execute(sql)
