@@ -159,9 +159,21 @@ precedence = (
 	( 'left', 'DOMINANCE', 'PRECEDENCE', 'SIBLING' )
 )
 
+def p_node_query(t):
+	'node_query : node_expr'
+	vars, where, nodes = t[1]
+	for v in vars:
+		where = where.replace(v, vars[v]) # FIXME
+	if nodes:
+		for i, j in zip(nodes, nodes[1:]):
+			where = i + '.treeid = ' + j + '.treeid AND ' + where
+		where += ' AND ' + nodes[0] + '.treeid = tree.id'
+
+	t[0] = ( where, nodes )
+
 def p_node_expr_simple(t):
 	'node_expr : node_rel'
-	t[0] = t[1][0:2]
+	t[0] = t[1]
 def p_node_expr_group(t):
 	'node_expr : LPAREN node_expr RPAREN'
 	t[0] = t[2]
@@ -170,20 +182,12 @@ def p_node_expr_oper(t):
 	             | node_expr OR node_expr'''
 	oper = 'AND' if t[2] == '&' else 'OR'
 	t[0] = ( check_dupes(t[1][0], t[3][0]),
-		'(' + t[1][1] + ') ' + oper + ' (' + t[3][1] + ')' )
+		'(' + t[1][1] + ') ' + oper + ' (' + t[3][1] + ')',
+		t[1][2] + t[3][2] )
 
 def p_node_rel_dummy(t):
-	'node_rel : node_desc'
-	t[0] = t[1]
-def p_node_rel_binary(t):
-	'''node_rel : node_rel DOMINANCE node_desc
-	            | node_rel PRECEDENCE node_desc
-	            | node_rel SIBLING node_desc'''
-	t[0] = ( check_dupes(t[1][0], t[3][0]),
-		'(' + t[1][1] + ') AND (' + t[3][1] + ') AND ' +
-		get_rel(t[2], t[1][3] or t[3][3], t[1][2], t[3][2]),
-		t[3][2], t[3][3] )
-
+	'node_rel : node_infix_rel'
+	t[0] = ( t[1][0], t[1][1], t[1][4] )
 def p_node_rel_nary(t):
 	'node_rel : ID LPAREN node_desc_list RPAREN'
 	# Apparently inlining the relation implementations makes the
@@ -204,7 +208,19 @@ def p_node_rel_nary(t):
 	else:
 		raise Exception('Unknown relation: ' + t[1] + '/' +
 				str(len(t[3])))
-	t[0] = ( vars, wheres )
+	t[0] = ( vars, wheres, [ n for tt in t[3] for n in tt[4] ] )
+
+def p_node_infix_rel_dummy(t):
+	'node_infix_rel : node_desc'
+	t[0] = t[1]
+def p_node_rel_infix_binary(t):
+	'''node_infix_rel : node_infix_rel DOMINANCE node_desc
+	                  | node_infix_rel PRECEDENCE node_desc
+	                  | node_infix_rel SIBLING node_desc'''
+	t[0] = ( check_dupes(t[1][0], t[3][0]),
+		'(' + t[1][1] + ') AND (' + t[3][1] + ') AND ' +
+		get_rel(t[2], t[1][3] or t[3][3], t[1][2], t[3][2]),
+		t[3][2], t[3][3], t[1][4] + t[2][4] )
 
 def p_node_desc_list(t):
 	'''node_desc_list : node_desc
@@ -228,10 +244,11 @@ def p_node_desc(t):
 			v in t[len(t) - 2][1] }
 
 	t[0] = ( check_dupes(check_dupes(vars0, vars1), vars2),
-		where, nodename, t[len(t) - 1] != ']' )
+		where, nodename, t[len(t) - 1] != ']', [ nodename ] )
 def p_node_desc_var(t):
 	'node_desc : VAR'
-	t[0] = ( {}, 'true', t[1], False ) # REVISIT: why false? should be true?
+	t[0] = ( {}, 'true', t[1], False, [] )
+	# REVISIT: why False? should be True?
 
 def p_feat_constraint_empty(t):
 	'feat_constraint : '
@@ -342,20 +359,15 @@ def query(tiger, offset):
 	global nodenum, nodenames
 	nodenum = 0
 	nodenames = []
-	vars, where = yacc.parse(tiger)
-	for v in vars:
-		where = where.replace(v, vars[v])
+	where, nodes = yacc.parse(tiger)
 	if '#' in where:
 		raise Exception('found uses of undefined variables')
-	for i, j in zip(nodenames, nodenames[1:]):
-		where = i + '.treeid = ' + j + '.treeid AND ' + where
-	where += ' AND n0.treeid = tree.id'
 
 	sql = 'SELECT filename, ' + \
 		', '.join([ 'array_agg(' + i + '.id - nid)' \
-			for i in nodenames ]) + \
-		' FROM ' + ', '.join([ 'node as ' + i for i in nodenames ]) + \
-			', tree' + \
+			for i in nodes ]) + \
+		' FROM ' + ', '.join([ 'node as ' + i for i in nodes ] +
+				[ 'tree' ]) + \
 		' WHERE ' + where + \
 		' GROUP BY filename' + \
 		' OFFSET ' + str(offset) + \
@@ -368,25 +380,22 @@ def count(tiger):
 	global nodenum, nodenames
 	nodenum = 0
 	nodenames = []
-	vars, where = yacc.parse(tiger)
-	for v in vars:
-		where = where.replace(v, vars[v])
+	where, nodes = yacc.parse(tiger)
 	if '#' in where:
 		raise Exception('found uses of undefined variables')
-	for i, j in zip(nodenames, nodenames[1:]):
-		where = i + '.treeid = ' + j + '.treeid AND ' + where
 
 	# TODO: use Loose Indexscan recursive CTEs (as below) but figure
 	# out how to force a sensible query plan
 	sql = 'WITH RECURSIVE t AS (SELECT -1 AS treeid UNION ALL SELECT (' + \
 		'SELECT min(n0.treeid) AS treeid' + \
-		' FROM ' + ', '.join([ 'node as ' + i for i in nodenames ]) + \
+		' FROM ' + ', '.join([ 'node as ' + i for i in nodes ]) + \
 		' WHERE n0.treeid > t.treeid AND ' + where + \
 		') FROM t WHERE t.treeid IS NOT NULL)' + \
 		' SELECT COUNT(1) - 1 FROM t'
 	# For now we use a COUNT DISTINCT, which may be really slow sometimes
-	sql = 'SELECT COUNT(DISTINCT n0.treeid)' + \
-		' FROM ' + ', '.join([ 'node as ' + i for i in nodenames ]) + \
+	# XXX: selecting from tree could be avoided when no nested queries
+	sql = 'SELECT COUNT(DISTINCT tree.id)' + \
+		' FROM tree' + ''.join([ ', node as ' + i for i in nodes ]) + \
 		' WHERE ' + where
 
 	curs.execute(sql)
