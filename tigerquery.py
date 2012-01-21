@@ -302,6 +302,8 @@ def p_feat_val_simple(t):
 		featname = t[1] + 'pos::text'
 	elif t[1] in [ 'nid' ]:
 		featname = 'id::text'
+	elif t[1] in [ 'cat' ]:
+		featname = 'category'
 	else:
 		featname = 'f::hstore->\'' + t[1] + '\''
 	vars = { v: featname for v in t[len(t) - 1][0] }
