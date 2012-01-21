@@ -365,7 +365,8 @@ searchbutton.onclick = function(evt) {
 	}
 
 	res_list.query = textinput.value.replace(/#/g, '%23').
-		replace(/\./g, '%2E').replace(/\\/g, '%5C');
+		replace(/\./g, '%2E').replace(/\\/g, '%5C').
+		replace(/\//g, '%2F');
 	res_list.offset = 0;
 	res_list.res_count = -1;
 	res_list.send_query();
