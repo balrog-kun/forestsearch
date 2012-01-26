@@ -659,14 +659,20 @@ res_list.tree_xml_load = function(i) {
 			}
 
 			var icons = '';
-			if (resp.forest['answer-data']['base-answer'].type ==
-					'NO_TREE') {
+			var atype = resp.forest['answer-data'][
+					'base-answer'].type;
+			if (atype == 'NO_TREE' || atype == 'NOT_SENTENCE' ||
+					atype == 'WRONG_SENTENCE' ||
+					atype == 'MORPH' ||
+					res.data.root == null) {
 				icons += '<img src=\'www/cross.png\' alt=\'' +
 					'Las nie zawiera poprawnego drzewa ' +
 					'analizy\' title=\'' +
 					'Las nie zawiera poprawnego drzewa ' +
 					'analizy\' class=\'icon\' />';
-				res.data.nodes[res.data.root].chosen = false;
+				if (res.data.root != null)
+					res.data.nodes[res.data.root].chosen =
+						false;
 			}
 			icons += '<img src=\'www/spreadsheet.png\' alt=\'' +
 				'Pokaż arkusz syntaktyczny dla tego lasu ' +
@@ -676,13 +682,17 @@ res_list.tree_xml_load = function(i) {
 				'ss_show(event, ' + i + ');\' />';
 
 			var minfrom = 11111, maxto = 0;
-			for (var j in res.nodes[0]) {
-				var n = res.data.nodes[res.nodes[0][j]];
-				if (res.data.frompos[n.from] < minfrom)
-					minfrom = res.data.frompos[n.from];
-				if (res.data.topos[n.to] > maxto)
-					maxto = res.data.topos[n.to];
-			}
+			if (res.nodes.length)
+				for (var j in res.nodes[0]) {
+					var n = res.data.nodes[res.nodes[0][j]];
+					if (res.data.frompos[n.from] < minfrom)
+						minfrom = res.data.frompos[
+							n.from];
+					if (res.data.topos[n.to] > maxto)
+						maxto = res.data.topos[n.to];
+				}
+			else
+				maxto = minfrom = 0;
 			var text = '';
 			var start = 0;
 			if (minfrom > 14 && maxto > 40) {
@@ -723,6 +733,12 @@ res_list.tree_xml_load = function(i) {
 
 function tree_show(evt) {
 	var res = res_list.results[this.num];
+
+	if (res.data.root == null) {
+		switch_to(res_list);
+		alert('Zdanie nie posiada drzew wyprowadzenia.');
+		return;
+	}
 
 	switch_to(res_forest, [ res_list ]);
 	if (!('viewer' in res_forest)) {
@@ -1069,13 +1085,21 @@ function adapt_schema(obj) {
 	if ('forest' in obj)
 		obj = obj.forest;
 
-	if (!('node' in obj))
-		throw 'Empty forest';
+	ret.nodes = {};
+
+	if (!('node' in obj)) {
+		if (!('text' in obj))
+			throw 'Empty forest';
+		ret.root = null;
+		ret.text = obj.text;
+		ret.frompos = {};
+		ret.topos = {};
+		return ret;
+	}
 
 	if ('nid' in obj.node)
 		obj.node = [ obj.node ];
 
-	ret.nodes = {};
 	for (var i in obj.node) {
 		var node = obj.node[i];
 		var tnt;

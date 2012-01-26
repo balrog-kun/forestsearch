@@ -198,7 +198,7 @@ def p_node_expr_not(t):
 	if t[2][1]:
 		sqlfrom = ' FROM ' + \
 			', '.join([ 'node AS ' + i for i in t[2][1] ])
-	t[0] = ( {},
+	t[0] = ( ( {}, {} ),
 		'(SELECT COUNT(1)' + sqlfrom + ' WHERE ' + t[2][0] +
 		' LIMIT 1) = 0',
 		[] )
