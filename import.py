@@ -144,7 +144,7 @@ for path, dir, files in os.walk(searchpath):
 					continue
 				if 'type' not in subel.attrib:
 					continue
-				if subel.attrib['type'] == 'NO_TREE':
+				if subel.attrib['type'] != 'FULL':
 					selmap = { n: 0 for n in selmap }
 				break
 			break
