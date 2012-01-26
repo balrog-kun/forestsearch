@@ -76,13 +76,15 @@ def get_next_node():
 	nodenames.append(nodename)
 	return nodename
 
+def merge_dict(a, b):
+	ret = a.copy()
+	ret.update(b)
+	return ret
 def check_dupes(a, b):
 	common = [ v for v in a if v in b ]
 	if common:
 		raise Exception('Variables ' + str(common) + ' redefined')
-	ret = a.copy()
-	ret.update(b)
-	return ret
+	return merge_dict(a, b)
 
 def get_rel(oper, general, a, b):
 	name = ''
@@ -162,14 +164,16 @@ precedence = (
 def p_node_query(t):
 	'node_query : node_expr'
 	vars, where, nodes = t[1]
-	for v in vars:
-		where = where.replace(v, vars[v]) # FIXME
+	for v in vars[0]:
+		where = where.replace(v, vars[0][v]) # FIXME
+		if v in vars[1]:
+			del vars[1][v]
 	if nodes:
 		for i, j in zip(nodes, nodes[1:]):
 			where = i + '.treeid = ' + j + '.treeid AND ' + where
 		where += ' AND ' + nodes[0] + '.treeid = tree.id'
 
-	t[0] = ( where, nodes )
+	t[0] = ( where, nodes, vars[1] )
 
 def p_node_expr_simple(t):
 	'node_expr : node_rel'
@@ -181,7 +185,8 @@ def p_node_expr_oper(t):
 	'''node_expr : node_expr AND node_expr
 	             | node_expr OR node_expr'''
 	oper = 'AND' if t[2] == '&' else 'OR'
-	t[0] = ( check_dupes(t[1][0], t[3][0]),
+	t[0] = ( ( check_dupes(t[1][0][0], t[3][0][0]),
+			merge_dict(t[1][0][1], t[3][0][1]) ),
 		'(' + t[1][1] + ') ' + oper + ' (' + t[3][1] + ')',
 		t[1][2] + t[3][2] )
 def p_node_expr_not(t):
@@ -209,18 +214,21 @@ def p_node_rel_nary(t):
 	# So we inline them here when possible.  We should do the same
 	# thing above in get_rel()
 	if t[1] == 'root' and len(t[3]) == 1:
-		vars = t[3][0][0]
 		# HACK (could also compare the nid.. which would also be a HACK)
 		wheres = t[3][0][2] + '.category = \'wypowiedzenie\' AND ' + \
 				'(' + t[3][0][1] + ')'
 	elif t[1] == 'same_tree' and len(t[3]) == 2:
-		vars = check_dupes(t[3][0][0], t[3][1][0])
 		wheres = '(' + t[3][0][1] + ') AND (' + t[3][1][1] + \
 				') AND same_tree(' + t[3][0][2] + ', ' + \
 				t[3][1][2] + ')'
 	else:
 		raise Exception('Unknown relation: ' + t[1] + '/' +
 				str(len(t[3])))
+	# reduce?
+	vars = t[3][0][0]
+	for tt in t[3][1:]:
+		vars = ( check_dupes(vars[0], tt[0][0]),
+			merge_dict(vars[1], tt[0][1]) )
 	t[0] = ( vars, wheres, [ n for tt in t[3] for n in tt[4] ] )
 
 def p_node_infix_rel_dummy(t):
@@ -230,7 +238,8 @@ def p_node_rel_infix_binary(t):
 	'''node_infix_rel : node_infix_rel DOMINANCE node_desc
 	                  | node_infix_rel PRECEDENCE node_desc
 	                  | node_infix_rel SIBLING node_desc'''
-	t[0] = ( check_dupes(t[1][0], t[3][0]),
+	t[0] = ( ( check_dupes(t[1][0][0], t[3][0][0]),
+			merge_dict(t[1][0][1], t[3][0][1]) ),
 		'(' + t[1][1] + ') AND (' + t[3][1] + ') AND ' +
 		get_rel(t[2], t[1][3] or t[3][3], t[1][2], t[3][2]),
 		t[3][2], t[3][3], t[1][4] + t[3][4] )
@@ -255,34 +264,37 @@ def p_node_desc(t):
 	vars1 = { v: nodename for v in t[len(t) - 2][0] }
 	vars2 = { v: nodename + '.' + t[len(t) - 2][1][v] for
 			v in t[len(t) - 2][1] }
+	vars3 = { v: nodename + '.' + t[len(t) - 2][3][v] for
+			v in t[len(t) - 2][3] }
 
-	t[0] = ( check_dupes(check_dupes(vars0, vars1), vars2),
+	t[0] = ( ( check_dupes(check_dupes(vars0, vars1), vars2), vars3 ),
 		where, nodename, t[len(t) - 1] != ']', [ nodename ] )
 def p_node_desc_var(t):
 	'node_desc : VAR'
-	t[0] = ( {}, 'true', t[1], False, [] )
+	t[0] = ( ( {}, {} ), 'true', t[1], False, [] )
 	# REVISIT: why False? should be True?
 
 def p_feat_constraint_empty(t):
 	'feat_constraint : '
-	t[0] = ( [], {}, 'true' )
+	t[0] = ( [], {}, 'true', {} )
 def p_feat_constraint_expr(t):
 	'''feat_constraint : feat_expr
 	                   | VARDECL feat_expr'''
-	t[0] = ( t[1:-1], t[len(t) - 1][0], t[len(t) - 1][1] )
+	t[0] = ( t[1:-1], t[len(t) - 1][0], t[len(t) - 1][1], t[len(t) - 1][2] )
 def p_feat_constraint_var(t):
 	'feat_constraint : VAR'
-	t[0] = ( [], {}, 'same(####nodename, ' + t[1] )
+	t[0] = ( [], {}, 'same(####nodename, ' + t[1], {} )
 
 def p_feat_expr_not(t):
 	'feat_expr : NOT feat_expr'
-	t[0] = ( t[2][0], 'NOT (' + t[2][1] + ')' )
+	t[0] = ( t[2][0], 'NOT (' + t[2][1] + ')', t[2][2] )
 def p_feat_expr_and(t):
 	'''feat_expr : feat_expr AND feat_expr
 	             | feat_expr OR feat_expr'''
 	oper = 'AND' if t[2] == '&' else 'OR'
 	t[0] = ( check_dupes(t[1][0], t[3][0]),
-		'(' + t[1][1] + ') ' + oper + ' (' + t[3][1] + ')' )
+		'(' + t[1][1] + ') ' + oper + ' (' + t[3][1] + ')',
+		merge_dict(t[1][2], t[3][2]) )
 def p_feat_expr_group(t):
 	'feat_expr : LPAREN feat_expr RPAREN'
 	t[0] = t[2]
@@ -307,22 +319,24 @@ def p_feat_val_simple(t):
 	else:
 		featname = 'f::hstore->\'' + t[1] + '\''
 	vars = { v: featname for v in t[len(t) - 1][0] }
-	where = t[len(t) - 1][1].replace('####featname',
+	bkup_vars = { v: featname for v in t[len(t) - 1][1][1] }
+	where = t[len(t) - 1][1][0].replace('####featname',
 			'####nodename.' + featname)
 	if len(t) > 4:
 		where = 'NOT (' + where + ')'
-	t[0] = ( vars, where )
+	t[0] = ( vars, where, bkup_vars )
 
 def p_feat_val_hstore(t):
 	'''feat_val : ID PRECEDENCE ID EQ feat_val_right
 	            | ID PRECEDENCE ID NOT EQ feat_val_right'''
 	featname = t[1] + '::hstore->\'' + t[3] + '\''
 	vars = { v: featname for v in t[len(t) - 1][0] }
-	where = t[len(t) - 1][1].replace('####featname',
+	bkup_vars = { v: featname for v in t[len(t) - 1][1][1] }
+	where = t[len(t) - 1][1][0].replace('####featname',
 			'####nodename.' + featname)
 	if len(t) > 6:
 		where = 'NOT (' + where + ')'
-	t[0] = ( vars, where )
+	t[0] = ( vars, where, bkup_vars )
 
 def p_feat_val_right(t):
 	'''feat_val_right : feat_val_expr
@@ -332,7 +346,7 @@ def p_feat_val_right(t):
 def p_feat_val_expr_string(t):
 	'''feat_val_expr : STRING
 	                 | VAR'''
-	t[0] = '####featname = ' + t[1]
+	t[0] = ( '####featname = ' + t[1], [ t[1] ] )
 def p_feat_val_expr_re(t):
 	'feat_val_expr : RE'
 	re = t[1].replace('\\', '\\\\').replace('\'', '\\\'')
@@ -340,10 +354,10 @@ def p_feat_val_expr_re(t):
 		re = '^' + re
 	if re[-1] != '$':
 		re = re + '$'
-	t[0] = '####featname ~ \'' + re + '\''
+	t[0] = ( '####featname ~ \'' + re + '\'', [] )
 def p_feat_val_expr_not(t):
 	'feat_val_expr : NOT feat_val_expr'
-	t[0] = 'NOT (' + t[2] + ')'
+	t[0] = ( 'NOT (' + t[2][0] + ')', [] )
 def p_feat_val_expr_group(t):
 	'feat_val_expr : LPAREN feat_val_expr_paren RPAREN'''
 	t[0] = t[2]
@@ -355,7 +369,7 @@ def p_feat_val_expr_paren_and(t):
 	'''feat_val_expr_paren : feat_val_expr_paren AND feat_val_expr_paren
 	                       | feat_val_expr_paren OR feat_val_expr_paren'''
 	oper = 'AND' if t[2] == '&' else 'OR'
-	t[0] = '(' + t[1] + ') ' + oper + ' (' + t[3] + ')'
+	t[0] = ( '(' + t[1][0] + ') ' + oper + ' (' + t[3][0] + ')', [] )
 
 def p_error(t):
 	raise Exception('syntax error')
@@ -374,7 +388,13 @@ def query(tiger, offset):
 	global nodenum, nodenames
 	nodenum = 0
 	nodenames = []
-	where, nodes = yacc.parse(tiger)
+	where, nodes, bkup_vars = yacc.parse(tiger)
+	for v in bkup_vars:
+		if v[0] != '#':
+			continue
+		val = bkup_vars[v]
+		where = where.replace(val + ' = ' + v, 'true')
+		where = where.replace(v, val) # FIXME
 	if '#' in where:
 		raise Exception('found uses of undefined variables')
 
@@ -394,7 +414,13 @@ def count(tiger):
 	global nodenum, nodenames
 	nodenum = 0
 	nodenames = []
-	where, nodes = yacc.parse(tiger)
+	where, nodes, bkup_vars = yacc.parse(tiger)
+	for v in bkup_vars:
+		if v[0] != '#':
+			continue
+		val = bkup_vars[v]
+		where = where.replace(val + ' = ' + v, 'true')
+		where = where.replace(v, val) # FIXME
 	if '#' in where:
 		raise Exception('found uses of undefined variables')
 
