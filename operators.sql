@@ -165,57 +165,57 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION precedence(left node, right node)
+CREATE OR REPLACE FUNCTION precedence(leftn node, rightn node)
 RETURNS bool AS $$
 BEGIN
-  return left.frompos < right.frompos;
+  return leftn.frompos < rightn.frompos;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION direct_precedence(left node, right node)
+CREATE OR REPLACE FUNCTION direct_precedence(leftn node, rightn node)
 RETURNS bool AS $$
 BEGIN
-  return left.topos = right.frompos;
+  return leftn.topos = rightn.frompos;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION precedence_num(min integer, max integer,
-	left node, right node)
+	leftn node, rightn node)
 RETURNS bool AS $$
 BEGIN
-  return right.frompos - left.frompos >= min AND
-      right.frompos - left.frompos <= max;
+  return rightn.frompos - leftn.frompos >= min AND
+      rightn.frompos - leftn.frompos <= max;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION siblings_with_precedence(left node, right node)
+CREATE OR REPLACE FUNCTION siblings_with_precedence(leftn node, rightn node)
 RETURNS bool COST 1000000000000000000000000000 AS $$
 BEGIN
-  return left.frompos < right.frompos and siblings(left, right);
+  return leftn.frompos < rightn.frompos and siblings(leftn, rightn);
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION forest_siblings_with_precedence(left node,
-	right node)
+CREATE OR REPLACE FUNCTION forest_siblings_with_precedence(leftn node,
+	rightn node)
 RETURNS bool COST 1000000000000000000000000000 AS $$
 BEGIN
-  return left.frompos < right.frompos and forest_siblings(left, right);
+  return leftn.frompos < rightn.frompos and forest_siblings(leftn, rightn);
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION siblings(left node, right node)
+CREATE OR REPLACE FUNCTION siblings(leftn node, rightn node)
 RETURNS bool COST 1000000000000000000000000000 AS $$
 BEGIN
-  return EXISTS (SELECT 1 FROM node WHERE treeid = left.treeid AND
-      sel AND left.id = ANY(children) AND right.id = ANY(children));
+  return EXISTS (SELECT 1 FROM node WHERE treeid = leftn.treeid AND
+      sel AND leftn.id = ANY(children) AND rightn.id = ANY(children));
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION forest_siblings(left node, right node)
+CREATE OR REPLACE FUNCTION forest_siblings(leftn node, rightn node)
 RETURNS bool COST 1000000000000000000000000000 AS $$
 BEGIN
-  return EXISTS (SELECT 1 FROM node WHERE treeid = left.treeid AND
-      left.id = ANY(children) AND right.id = ANY(children));
+  return EXISTS (SELECT 1 FROM node WHERE treeid = leftn.treeid AND
+      leftn.id = ANY(children) AND rightn.id = ANY(children));
 END;
 $$ LANGUAGE plpgsql;
 
