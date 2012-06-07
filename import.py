@@ -91,7 +91,7 @@ def parse_node_desc(el, nid, tree, depthmap, selmap):
 
 				if subsub.tag in [ 'orth', 'base', 'category' ]:
 					vals[subsub.tag] = '\'' + \
-						text.replace('\'', '\\\'') + \
+						text.replace('\'', '\'\'') + \
 						'\''
 				elif subsub.tag == 'f':
 					vals['f'][subsub.attrib['type']] = \
