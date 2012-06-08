@@ -149,7 +149,7 @@ def get_rel(oper, general, a, b):
 	if len(query) > 5:
 		return query
 	else:
-		return name + a + ', ' + b + ')'
+		return query + name + a + ', ' + b + ')'
 
 # TIGERSearch query language parser
 
